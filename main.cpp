@@ -35,6 +35,11 @@ Node* getUncle(Node* node);
 void fixInsert(Node* &root, Node* newnode);
 void insCaseI(Node* &root);
 
+<<<<<<< HEAD
+=======
+// search
+Node* traverse(Node* current, int searchkey);
+>>>>>>> 9e54578ffab5e3277456470600df8f48aa55476b
 
 // remove
 void remove(Node* &root, Node* current, Node* parent, int searchkey);
@@ -158,7 +163,11 @@ void insert(Node* &root, Node* current, Node* newnode)
       root = newnode;
       //print(root, 0);
       // jump to CASE I: new node is the root
+<<<<<<< HEAD
       fixInsert(root, newnode);
+=======
+      fixInsert(root, newnode, true);
+>>>>>>> 9e54578ffab5e3277456470600df8f48aa55476b
       return;
     }
 
@@ -169,9 +178,16 @@ void insert(Node* &root, Node* current, Node* newnode)
 	{
 	  current->setLeft(newnode);
 	  current->getLeft()->setParent(current); // establish the parent
+<<<<<<< HEAD
 	  
 	  // after inserting, we have to check the violations
 	  fixInsert(root, newnode);
+=======
+
+	  //print(root, 0);
+	  // after inserting, we have to check the violations
+	  fixInsert(root, newnode, true);
+>>>>>>> 9e54578ffab5e3277456470600df8f48aa55476b
 	}
       else // keep moving down the tree
 	{
@@ -186,7 +202,12 @@ void insert(Node* &root, Node* current, Node* newnode)
 	{
 	  current->setRight(newnode);
 	  current->getRight()->setParent(current); // establish the parent
+<<<<<<< HEAD
 	  fixInsert(root, newnode);
+=======
+	  //print(root, 0);
+	  fixInsert(root, newnode, true);
+>>>>>>> 9e54578ffab5e3277456470600df8f48aa55476b
 	}
       else // keep moving down the tree
 	{
@@ -202,6 +223,7 @@ void insert(Node* &root, Node* current, Node* newnode)
     }
 }
 
+<<<<<<< HEAD
 void fixInsert(Node* &root, Node* newnode)
 {
   cout << "inside fix insert" << endl;
@@ -315,6 +337,54 @@ void fixInsert(Node* &root, Node* newnode)
   else
     {
       cout << "what is happening" << endl;
+=======
+void fixInsert(Node* &root, Node* newnode, bool violation)
+{
+  char uncleColor = '\0';
+  char parentColor = '\0';
+
+  // all violations have been fixed!
+  if (!violation)
+    {
+      return;
+    }
+  else
+    {
+      // if the root is NOT black
+      // if the node is red has has red parents
+      if (getUncle(newnode))
+	{
+	  uncleColor = getUncle(newnode)->getColor();
+	}
+      if (newnode->getParent())
+	{
+	  parentColor = newnode->getParent()->getColor();
+	}
+
+      // CASE 1: newnode is the root
+      if (newnode == root)
+	{
+	  insCaseI(newnode);
+	}
+
+      // CASE 2: parent is the root and it is red                                 
+      if (newnode->getParent() == root && parentColor == 'r')
+	{
+	}
+
+      // CASE 3: parent and uncle nodes are red (2 red generations)
+      if (uncleColor == 'r' && parentColor == 'r')
+	{
+	}
+
+      // CASE 4: parent node is red, uncle node is black, inner grandchild
+      if (parentColor == 'r' && uncleColor == 'b')
+	{
+	}
+
+      // CASE 5: parent node is red, uncle is black, outer grandchild
+
+>>>>>>> 9e54578ffab5e3277456470600df8f48aa55476b
     }
 }
 
