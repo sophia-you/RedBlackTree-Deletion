@@ -27,31 +27,23 @@ using namespace std;
 // FUNCTION PROTOTYPES
 // insertion
 void insert(Node* &root, Node* current,  Node* newnode);
+void fixInsert(Node* &root, Node* newnode);
+
+// general operations
 void rightRotation(Node* current, Node* &root);
 void leftRotation(Node* current, Node* &root);
 void print(Node* current, int numTabs);
 int childStatus(Node* node);
 Node* getUncle(Node* node);
-void fixInsert(Node* &root, Node* newnode);
-void insCaseI(Node* &root);
-
-<<<<<<< HEAD
-=======
-// search
-Node* traverse(Node* current, int searchkey);
->>>>>>> 9e54578ffab5e3277456470600df8f48aa55476b
 
 // remove
 void remove(Node* &root, Node* current, Node* parent, int searchkey);
 
 int main()
 {
-  // user input and running
   int max = 50;
   char input[max];
   bool running = true;
-
-  // binary tree
   Node* root = NULL;
 
   // the program will loop until the user wants to quit
@@ -70,15 +62,9 @@ int main()
 
       cin.getline(input, max);
 
-      // stop running
       if (strcmp(input, "quit") == 0)
 	{
 	  running = false;
-	}
-
-      else if (strcmp(input, "test") == 0)
-	{
-	  
 	}
       // insert nodes into the tree via console or file
       else if (strcmp(input, "insert") == 0)
@@ -95,7 +81,6 @@ int main()
 	      Node* newnode = new Node(newnum);
 	      insert(root, root, newnode);
 	      print(root, 0);
-	      
 	    }
 	  else if (strcmp(input, "read") == 0)
 	    {
@@ -104,17 +89,13 @@ int main()
 	      cin.getline(input, max);
 	      ifstream inFile;
 	      inFile.open(input);
-
 	      int newnum = 0; // temporarily keeps track of values
 	      while (inFile >> newnum)
 		{
 		  Node* newnode	= new Node(newnum);
                   insert(root, root, newnode);
 		}
-
-	      // print out the tree
-	      print(root, 0);
-	      
+	      print(root, 0); // print out the tree after insertion
 	      inFile.close();
 	    }
 	  else
@@ -122,8 +103,6 @@ int main()
 	      cout << "Command not recognized." << endl;
 	    }
 	}
-
-      // prompt the user for a node to remove
       else if (strcmp(input, "remove") == 0)
         {
 	  cout << "What number are you trying to remove?" << endl;
@@ -131,14 +110,11 @@ int main()
 	  cin >> searchkey;
 	  cin.ignore(max, '\n');
         }
-
-      // displays the tree in a visual manner
-      else if (strcmp(input, "print") == 0)
+      else if (strcmp(input, "print") == 0) // visual display of tree
         {
 	  print(root, 0);
         }
     }
-
   return 0;
 }
 
@@ -157,20 +133,14 @@ int main()
  */
 void insert(Node* &root, Node* current, Node* newnode)
 {
-
   if (root == NULL) // empty tree
     {
       root = newnode;
-      //print(root, 0);
-      // jump to CASE I: new node is the root
-<<<<<<< HEAD
+      // since root was inserted as red, we must fix the violations
       fixInsert(root, newnode);
-=======
-      fixInsert(root, newnode, true);
->>>>>>> 9e54578ffab5e3277456470600df8f48aa55476b
       return;
     }
-
+  
   // the new node is smaller than the parent; add to left branch
   else if (newnode->getValue() < current->getValue())
     {
@@ -178,16 +148,7 @@ void insert(Node* &root, Node* current, Node* newnode)
 	{
 	  current->setLeft(newnode);
 	  current->getLeft()->setParent(current); // establish the parent
-<<<<<<< HEAD
-	  
-	  // after inserting, we have to check the violations
 	  fixInsert(root, newnode);
-=======
-
-	  //print(root, 0);
-	  // after inserting, we have to check the violations
-	  fixInsert(root, newnode, true);
->>>>>>> 9e54578ffab5e3277456470600df8f48aa55476b
 	}
       else // keep moving down the tree
 	{
@@ -202,12 +163,7 @@ void insert(Node* &root, Node* current, Node* newnode)
 	{
 	  current->setRight(newnode);
 	  current->getRight()->setParent(current); // establish the parent
-<<<<<<< HEAD
 	  fixInsert(root, newnode);
-=======
-	  //print(root, 0);
-	  fixInsert(root, newnode, true);
->>>>>>> 9e54578ffab5e3277456470600df8f48aa55476b
 	}
       else // keep moving down the tree
 	{
@@ -219,19 +175,29 @@ void insert(Node* &root, Node* current, Node* newnode)
   else if (newnode->getValue() == current->getValue())
     {
       cout << "Two nodes of the same value cannot be added." << endl;
-      cout << "Therefore the node " << newnode->getValue() << " cannot be addedmore than once." << endl;
+      cout << "Therefore the node " << newnode->getValue() << " cannot be added more than once." << endl;
     }
 }
 
-<<<<<<< HEAD
+/**
+ * This function is only called inside the insert function. This is because
+ * a new node in the red black tree is automatically inserted as a red node
+ * in a standard binary search tree. Doing this may violate properties of
+ * a red-black tree, so this separate function is designed specifically to
+ * fix the violations on a case-by case basis:
+ * 
+ * Case 1: if the new node is the root, change its color to black.
+ * Case 2: the new node's parent is black. No violations.
+ * Case 3: Both the new node's parent, p and uncle, u are RED. Change p and u
+ * to BLACK, change grandparent g to RED, and recursively call fixInsert again.
+ * Case 4: p is RED, u is BLACK or NULL, and new node is the inner grandchild.
+ * Case 5: p is RED, u is BLACK or NULL, and new node is the outer grandchild.
+ */
 void fixInsert(Node* &root, Node* newnode)
 {
-  cout << "inside fix insert" << endl;
-  print(root, 0);
   // CASE 1: new node is the root. Just set it to black
   if (newnode == root) // case 1
     {
-      cout << "case one" << endl;
       root->setColor('b');
       return;
     }
@@ -239,14 +205,13 @@ void fixInsert(Node* &root, Node* newnode)
   // CASE 2: newnode's parent is black
   else if (newnode->getParent()->getColor() == 'b') // case 2
     {
-      cout << "case two" << endl; 
+      // no violations
     }
 
   // CASE 3: Parent and the uncle are RED
   else if (newnode->getParent()->getColor() == 'r' &&
 	   getUncle(newnode) && getUncle(newnode)->getColor() == 'r') // case 3
     {
-      cout << "case 3" << endl;
       Node* grandparent = NULL;
       if (newnode->getParent()->getParent())
 	{
@@ -264,30 +229,24 @@ void fixInsert(Node* &root, Node* newnode)
 	{
 	  grandparent->setColor('r');
 	}
-      
-      // we have to fix any possible violations created by this
-      fixInsert(root, grandparent);
+      fixInsert(root, grandparent); // fix any new violations
     }
 
   // CASE 4: Uncle is black, and newnode is the inner grandchild (triangle)
-  // childstatus 1 is left child, childstatus 0 is right child
+  // childstatus 1 is left child, childstatus 2 is right child
   // CASE 5: Uncle is black, and newnode is the outer grandchild (line)
   else if (newnode->getParent()->getColor() == 'r' &&
 	   ((getUncle(newnode) && getUncle(newnode)->getColor() == 'b') ||
 	    getUncle(newnode) == NULL)) // null children are black
     {
-      cout << "case 4 or case 5" << endl;
       Node* parent = newnode->getParent();
       Node* grandparent = newnode->getParent()->getParent();
-      cout << "new node status: " << childStatus(newnode) << endl;
-      cout << "parent status: " << childStatus(parent) << endl;
       
       // CASE 4
       // right inner grandchild
       if (childStatus(newnode) == 2 &&
 	  childStatus(parent) == 1)
 	{
-	  cout << "case 4, right inner grandchild" << endl;
 	  // tree rotation through the node's parent in the OPPOSITE direction
 	  leftRotation(parent, root);
 	  fixInsert(root, parent); // call case 5 on the parent node
@@ -296,7 +255,6 @@ void fixInsert(Node* &root, Node* newnode)
       else if (childStatus(newnode) == 1 &&
              childStatus(parent) == 2)
 	{
-	  cout << "case 4, left inner grandchild" << endl;
 	  // tree rotation in the opposite direction
 	  rightRotation(parent, root);
 	  fixInsert(root, parent);
@@ -307,7 +265,6 @@ void fixInsert(Node* &root, Node* newnode)
       else if (childStatus(newnode) == 1 &&
 	  childStatus(parent) == 1)
 	{
-	  cout << "case 5 left" << endl;
 	  // tree rotation through the grandparent
 	  if (grandparent) // if grandparent is not null
 	    {
@@ -323,7 +280,6 @@ void fixInsert(Node* &root, Node* newnode)
       else if (childStatus(newnode) == 2 &&
 	       childStatus(parent) == 2)
 	{
-	  cout << "case 5 right" << endl;
 	  if (grandparent)
 	    {
 	      leftRotation(grandparent, root);
@@ -336,55 +292,7 @@ void fixInsert(Node* &root, Node* newnode)
     }
   else
     {
-      cout << "what is happening" << endl;
-=======
-void fixInsert(Node* &root, Node* newnode, bool violation)
-{
-  char uncleColor = '\0';
-  char parentColor = '\0';
-
-  // all violations have been fixed!
-  if (!violation)
-    {
-      return;
-    }
-  else
-    {
-      // if the root is NOT black
-      // if the node is red has has red parents
-      if (getUncle(newnode))
-	{
-	  uncleColor = getUncle(newnode)->getColor();
-	}
-      if (newnode->getParent())
-	{
-	  parentColor = newnode->getParent()->getColor();
-	}
-
-      // CASE 1: newnode is the root
-      if (newnode == root)
-	{
-	  insCaseI(newnode);
-	}
-
-      // CASE 2: parent is the root and it is red                                 
-      if (newnode->getParent() == root && parentColor == 'r')
-	{
-	}
-
-      // CASE 3: parent and uncle nodes are red (2 red generations)
-      if (uncleColor == 'r' && parentColor == 'r')
-	{
-	}
-
-      // CASE 4: parent node is red, uncle node is black, inner grandchild
-      if (parentColor == 'r' && uncleColor == 'b')
-	{
-	}
-
-      // CASE 5: parent node is red, uncle is black, outer grandchild
-
->>>>>>> 9e54578ffab5e3277456470600df8f48aa55476b
+      cout << "Something is wrong." << endl;
     }
 }
 
@@ -434,7 +342,7 @@ Node* getUncle(Node* node)
 }
 
 /**
- * This function performs a right rotation around a given node "current"
+ * This function performs a right rotation around a given node "current."
  */
 void rightRotation(Node* current, Node* &root)
 {
@@ -445,49 +353,47 @@ void rightRotation(Node* current, Node* &root)
       Node* rotated = current->getLeft(); // this will take current's place
       if (rotated->getRight())
 	{
-	  cout << "right subtree exists!" << endl;
 	  rightSubtree = rotated->getRight();
 	}
 	  if (current->getParent()) // if the rotated node is NOT the root
+	{
+	  // set left child's parent as the grandparent
+	  rotated->setParent(current->getParent());
+
+	  // depending on whether current itself was a left or right child
+	  // current's left child will take the place of current
+	  if (childStatus(current) == 1) // left child
 	    {
-	      // set left child's parent as the grandparent
-	      rotated->setParent(current->getParent());
-
-	      // depending on whether current itself was a left or right child
-	      // current's left child will take the place of current
-	      if (childStatus(current) == 1) // left child
-		{
-		  //cout << "current is a left child" << endl;
-		  current->getParent()->setLeft(rotated);
-		}
-	      else if (childStatus(current) == 2) // right child
-		{
-		  //cout << "current is a right child" << endl;
-		  current->getParent()->setRight(rotated);
-		}
+	      //cout << "current is a left child" << endl;
+	      current->getParent()->setLeft(rotated);
 	    }
-	  else if (!current->getParent()) // the rotated node IS the root
+	  else if (childStatus(current) == 2) // right child
 	    {
-	      // in this case, there is no parent
-	      // we have to redefine the root as the rotated node
-	      //cout << "hello" << endl;
-	      root = rotated;
-	      root->setParent(NULL);
-	      cout << current->getValue() << endl;
+	      //cout << "current is a right child" << endl;
+	      current->getParent()->setRight(rotated);
 	    }
+	}
+      else if (!current->getParent()) // the rotated node IS the root
+	{
+	  // in this case, there is no parent
+	  // we have to redefine the root as the rotated node
+	  //cout << "hello" << endl;
+	  root = rotated;
+	  root->setParent(NULL);
+	  cout << current->getValue() << endl;
+	}
 
-	  current->setParent(rotated); // current becomes the right subtree
-	  rotated->setRight(current);
-	  
-	  // the old right subtree becomes current's left subtree
-	  current->setLeft(rightSubtree);
+      current->setParent(rotated); // current becomes the right subtree
+      rotated->setRight(current);
 
-	  print(root, 0);
-	
+      // the old right subtree becomes current's left subtree
+      current->setLeft(rightSubtree);
     }
 }
 
-
+/**
+ * This function performs a left rotation around a given node "current."
+ */
 void leftRotation(Node* current, Node* &root)
 {
   // if the right subtree of the left child exists
@@ -497,14 +403,10 @@ void leftRotation(Node* current, Node* &root)
       Node* leftSubtree = NULL;
       if (rotated->getLeft())
 	{
-	  cout << "left subtree exists!" << endl;
 	  leftSubtree = rotated->getLeft();
-	  cout << "current: " << current->getValue() << endl;
-	  cout << "root: " << root->getValue() << endl;
 	}
 	  if (current->getParent() != NULL) // if the rotated node is NOT the root
 	    {
-	      cout << "parent is not equal to null" << endl;
 	      // set left child's parent as the grandparent
 	      rotated->setParent(current->getParent());
 
@@ -512,18 +414,15 @@ void leftRotation(Node* current, Node* &root)
 	      // current's left child will take the place of current
 	      if (childStatus(current) == 1) // left child
 		{
-		  cout << "current is a left child" << endl;
 		  current->getParent()->setLeft(rotated);
 		}
 	      else if (childStatus(current) == 2) // right child
 		{
-		  cout << "current is a right child" << endl;
 		  current->getParent()->setRight(rotated);
 		}
 	    }
 	  else if (current == root) // rotated node IS the root
 	    {
-	      cout << "current is the root" << endl;
 	      root = rotated;
 	      root->setParent(NULL);
 	      cout << rotated->getValue() << endl;
@@ -534,16 +433,7 @@ void leftRotation(Node* current, Node* &root)
 	  
 	  // the old right subtree becomes current's left subtree
 	  current->setRight(leftSubtree);
-	  print(root, 0);
-	
     }
-}
-
-// INSERTION CASES I-V
-void insCaseI(Node* &root)
-{
-  root->setColor('b');
-  return;
 }
 
 /**
@@ -570,168 +460,7 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
   // we have found the node to remove
   if (searchkey == current->getValue())
     {
-
-      // this node has no children; we can just delete it
-      if (current->getLeft() == NULL &&
-	  current->getRight() == NULL)
-      {
-
-	// the root is the only thing in the tree
-	if (current == root)
-	  {
-	    root = NULL; // the tree is now empty
-	  }
-	// current node itself is a left child
-	if (parent->getLeft() == current)
-	  {
-	    parent->setLeft(NULL);
-	  }
-	// current node itself is a right child;
-	else if (parent->getRight() == current)
-	  {
-	    parent->setRight(NULL);
-	  }
-	Node* temp = current;
-	delete temp;
-      }
-
-      // if the node has one child
-      else if (current->getLeft() == NULL || current->getRight() == NULL)
-	{
-	  // this is the current node's non-null child
-	  // this child will be adopted by current node's parent
-	  Node* child = NULL;
-
-	  // determine which child is not null
-	  if (current->getLeft() != NULL)
-	    {
-	      child = current->getLeft();
-	    }
-	  else if (current->getRight() != NULL)
-	    {
-	      child = current->getRight();
-	    }
-
-	  // if the node to be removed is the root
-	  if (current == root)
-	    {
-	      // we cannot just delete the root since it's by reference
-	      Node* temp = current;
-	      root = child;
-	      delete temp;
-	    }
-	  else // the node to be removed isn't the root
-	    {
-	      // adopt the child (if the current node is not the root)
-	      if (parent->getLeft() == current)
-		{
-		  parent->setLeft(child);
-		}
-	      else if (parent->getRight() == current)
-		{
-		  parent->setRight(child);
-		}
-
-	      Node* temp = current;
-	      delete temp;
-	    }
-	}
-
-      // the node has two children
-      else if (current->getLeft() != NULL && current->getRight() != NULL)
-	{
-	  
-	  // we need to find the next largest node AND the next largest node's
-	  // parent
-	  // go to the right child, then go left as far as possible
-	  Node* nextLargest = current->getRight();
-	  Node* nextLargestParent = current;
-	  while (nextLargest->getLeft() != NULL)
-	    {
-	      nextLargestParent = nextLargest;
-	      nextLargest = nextLargest->getLeft();
-	    }
-
-	  /*
-	   * IMPORTANT NOTE:
-	   * If this while statement works, the node nextLargest should NOT
-	   * have another left child. It either has a right child or no
-	   * children.
-	   */
-
-	  // we must save the child's subtree
-	  // this is the child of the next largest node
-	  Node* nextChild = nextLargest->getRight();
-
-	  // next, we must disconnect the next largest from its subtree
-	  // this is because we are moving the next largest to replace
-	  // the current node and we don't want it to have baggage
-	  nextLargest->setRight(NULL);
-
-	  // nextLargest will replace where the parent node used to be
-	  if (current == root) // if the node to be removed is the root
-	    {
-	      Node* temp = current;
-
-	      // root is replaced by the next largest node
-	      root = nextLargest;
-
-	      // connect nextLargest to the root's original subtree
-	      if (current->getLeft() != nextLargest)
-                {
-                  nextLargest->setLeft(current->getLeft());
-                }
-              if (current->getRight() != nextLargest)
-                {
-                  nextLargest->setRight(current->getRight());
-                }
-
-	      // nextLargest's original parent will adopt nextLargest's child
-              if (nextLargestParent != current)
-                {
-                  nextLargestParent->setLeft(nextChild);
-                }
-
-	      delete temp;
-	    }
-	  else // the node to be removed isn't the root
-            {
-	      
-              // if the current node in question is a left child
-              if (parent->getLeft() == current)
-                {
-                  parent->setLeft(nextLargest);
-                }
-
-	      // the current node is a right child
-              else if (parent->getRight() == current)
-                {
-		  parent->setRight(nextLargest);
-                }
-
-	      // the next largest has replaced the current node's position
-	      // we much attach the nextLargest to current node's subtree
-	      if (current->getLeft() != nextLargest)
-		{
-		  nextLargest->setLeft(current->getLeft());
-		}
-	      if (current->getRight() != nextLargest)
-		{
-		  nextLargest->setRight(current->getRight());
-		}
-	      
-	      // there is still an empty space between nextLargest's parent
-	      // and nextLargest's child; we must bridge that gap
-	      if (nextLargestParent != current)
-		{
-		  nextLargestParent->setLeft(nextChild);
-		}
-	      
-              Node* temp = current;
-              delete temp;
-            }
-	  
-	}
+      // deletion will go here
     }
   else if (searchkey < current->getValue())
     {
