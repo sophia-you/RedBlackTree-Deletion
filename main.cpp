@@ -7,7 +7,7 @@ using namespace std;
 
 /*
  * Author | Sophia You
- * Date | March 27 2024
+ * Date | May 6 2024
  * Description | This is a red-black binary search tree. It is a way of
  * creating a more balanced binary search tree. Red-black tree conditions
  * and cases are explained in more detail below.
@@ -25,14 +25,18 @@ using namespace std;
  */
 
 // FUNCTION PROTOTYPES
-// insertion + cases
+// insertion
 void insert(Node* &root, Node* current,  Node* newnode);
 void rightRotation(Node* current, Node* &root);
 void leftRotation(Node* current, Node* &root);
 void print(Node* current, int numTabs);
 int childStatus(Node* node);
+Node* getUncle(Node* node);
+void fixInsert(Node* &root, Node* newnode);
 void insCaseI(Node* &root);
-Node* traverse(Node* current, int searchkey);
+
+
+// remove
 void remove(Node* &root, Node* current, Node* parent, int searchkey);
 
 int main()
@@ -121,45 +125,12 @@ int main()
 	  int searchkey = 0; // this is the number we're trying to remove
 	  cin >> searchkey;
 	  cin.ignore(max, '\n');
-
-	  // we must make sure the value we want to remove is in the tree.
-	  if (!traverse(root, searchkey))
-	    {
-	      cout << "This value is not in the binary tree." << endl;
-	    }
-	  else
-	    {
-	      remove(root, root, root, searchkey);
-	      print(root, 0);
-	    }
         }
 
       // displays the tree in a visual manner
       else if (strcmp(input, "print") == 0)
         {
 	  print(root, 0);
-        }
-
-      // determines whether a node exists or not within a tree
-      else if (strcmp(input, "search") == 0)
-        {
-	  cout << endl;
-	  cout << "Which number are you trying to find?" << endl;
-	  int searchkey = 0; // this is the number we are trying to find
-	  cin >> searchkey;
-	  cin.ignore(max, '\n');
-	  Node* found = traverse(root, searchkey);
-	  if (found)
-	    {
-	      cout << "This value exists in the binary tree." << endl;
-	      rightRotation(found, root);
-	      cout << "left rotation" << endl;
-	      leftRotation(found->getParent(), root);
-	    }
-	  else
-	    {
-	      cout << "This value does not exist in the binary tree." << endl;
-	    }
         }
     }
 
@@ -172,7 +143,8 @@ int main()
  * search tree. If the new value is greater, it goes down to the right child,
  * and if it is lesser, it goes down the left. This process is repeated
  * with each node until the new value reaches a left and establishes
- * its position there.
+ * its position there. It then readjusts the tree based on the red black tree
+ * cases.
  *
  * @param root | the root of the btree in question
  * &param current | the current node in the btree we're evaluating
@@ -184,9 +156,9 @@ void insert(Node* &root, Node* current, Node* newnode)
   if (root == NULL) // empty tree
     {
       root = newnode;
-
+      //print(root, 0);
       // jump to CASE I: new node is the root
-      insCaseI(root);
+      fixInsert(root, newnode);
       return;
     }
 
@@ -197,10 +169,9 @@ void insert(Node* &root, Node* current, Node* newnode)
 	{
 	  current->setLeft(newnode);
 	  current->getLeft()->setParent(current); // establish the parent
-	  if (newnode->getParent() && newnode->getParent()->getColor() == 'r')
-	    {
-	      newnode->setColor('b');
-	    }
+	  
+	  // after inserting, we have to check the violations
+	  fixInsert(root, newnode);
 	}
       else // keep moving down the tree
 	{
@@ -215,10 +186,7 @@ void insert(Node* &root, Node* current, Node* newnode)
 	{
 	  current->setRight(newnode);
 	  current->getRight()->setParent(current); // establish the parent
-	  if (newnode->getParent() && newnode->getParent()->getColor() == 'r')
-            {
-              newnode->setColor('b');
-            }
+	  fixInsert(root, newnode);
 	}
       else // keep moving down the tree
 	{
@@ -234,12 +202,120 @@ void insert(Node* &root, Node* current, Node* newnode)
     }
 }
 
-void insCaseChecker(Node* &root, Node* current)
+void fixInsert(Node* &root, Node* newnode)
 {
-  // CASE 2: parent is the root and it is red
-  // CASE 3: parent and uncle nodes are red (2 red generations)
-  // CASE 4: parent node is red, uncle node is black, inner grandchild
-  // CASE 5: parent node is red, uncle is black, outer grandchild
+  cout << "inside fix insert" << endl;
+  print(root, 0);
+  // CASE 1: new node is the root. Just set it to black
+  if (newnode == root) // case 1
+    {
+      cout << "case one" << endl;
+      root->setColor('b');
+      return;
+    }
+
+  // CASE 2: newnode's parent is black
+  else if (newnode->getParent()->getColor() == 'b') // case 2
+    {
+      cout << "case two" << endl; 
+    }
+
+  // CASE 3: Parent and the uncle are RED
+  else if (newnode->getParent()->getColor() == 'r' &&
+	   getUncle(newnode) && getUncle(newnode)->getColor() == 'r') // case 3
+    {
+      cout << "case 3" << endl;
+      Node* grandparent = NULL;
+      if (newnode->getParent()->getParent())
+	{
+	  grandparent = newnode->getParent()->getParent();
+	}
+      Node* uncle = getUncle(newnode);
+
+      // set the parent node to black to fix the red-black property violation
+      newnode->getParent()->setColor('b');
+      if (uncle) // if uncle exists
+	{
+	  uncle->setColor('b');
+	}
+      if (grandparent) // if grandparent exists
+	{
+	  grandparent->setColor('r');
+	}
+      
+      // we have to fix any possible violations created by this
+      fixInsert(root, grandparent);
+    }
+
+  // CASE 4: Uncle is black, and newnode is the inner grandchild (triangle)
+  // childstatus 1 is left child, childstatus 0 is right child
+  // CASE 5: Uncle is black, and newnode is the outer grandchild (line)
+  else if (newnode->getParent()->getColor() == 'r' &&
+	   ((getUncle(newnode) && getUncle(newnode)->getColor() == 'b') ||
+	    getUncle(newnode) == NULL)) // null children are black
+    {
+      cout << "case 4 or case 5" << endl;
+      Node* parent = newnode->getParent();
+      Node* grandparent = newnode->getParent()->getParent();
+      cout << "new node status: " << childStatus(newnode) << endl;
+      cout << "parent status: " << childStatus(parent) << endl;
+      
+      // CASE 4
+      // right inner grandchild
+      if (childStatus(newnode) == 2 &&
+	  childStatus(parent) == 1)
+	{
+	  cout << "case 4, right inner grandchild" << endl;
+	  // tree rotation through the node's parent in the OPPOSITE direction
+	  leftRotation(parent, root);
+	  fixInsert(root, parent); // call case 5 on the parent node
+	}
+      // left inner grandchild
+      else if (childStatus(newnode) == 1 &&
+             childStatus(parent) == 2)
+	{
+	  cout << "case 4, left inner grandchild" << endl;
+	  // tree rotation in the opposite direction
+	  rightRotation(parent, root);
+	  fixInsert(root, parent);
+	}
+
+      // CASE 5
+      // left outer grandchild
+      else if (childStatus(newnode) == 1 &&
+	  childStatus(parent) == 1)
+	{
+	  cout << "case 5 left" << endl;
+	  // tree rotation through the grandparent
+	  if (grandparent) // if grandparent is not null
+	    {
+	      rightRotation(grandparent, root);
+
+	      // switch parent and grandparent colors
+	      char parentColor = parent->getColor();
+	      parent->setColor(grandparent->getColor());
+	      grandparent->setColor(parentColor);
+	    }
+	}
+      // right outer grandchild
+      else if (childStatus(newnode) == 2 &&
+	       childStatus(parent) == 2)
+	{
+	  cout << "case 5 right" << endl;
+	  if (grandparent)
+	    {
+	      leftRotation(grandparent, root);
+	      // switch parent and grandparent colors                          
+	      char parentColor = parent->getColor();
+              parent->setColor(grandparent->getColor());
+              grandparent->setColor(parentColor);
+	    }
+	}
+    }
+  else
+    {
+      cout << "what is happening" << endl;
+    }
 }
 
 /**
@@ -263,6 +339,28 @@ int childStatus(Node* node)
 	}
     }
   return 0; // if we have some other situation going on
+}
+
+/**
+ * This function will return the node that is the current node's uncle, or 
+ * the sibling to the parent node
+ */
+
+Node* getUncle(Node* node)
+{
+  if (childStatus(node->getParent()) == 1) // parent is the left child
+    {
+      // returns the RIGHT child of the grandparent
+      return node->getParent()->getParent()->getRight();
+    }
+  else if (childStatus(node->getParent()) == 2) // parent is the right child
+  {
+    return node->getParent()->getParent()->getLeft(); // parent is left child
+  }
+  else
+    {
+      return NULL;
+    }
 }
 
 /**
@@ -573,7 +671,6 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
     {
       remove(root, current->getRight(), current, searchkey);
     }
-  
 }
 
 /**
@@ -610,43 +707,5 @@ void print(Node* current, int numTabs)
     }
 
   cout << "\n"; // print the current value
-  print(current->getLeft(), numTabs); // recursively print left child
-}
-
-/**
- * This function, when given a "searchkey," walks through the
- * binary tree and determines whether the searchkey is found in the tree.
- *
- * @param current | the current node we're dealing with
- * @param searchkey | the value of the node we're trying to find
- * @return Node | returns the node if the searchkey was found
- */
-Node* traverse(Node* current, int searchkey)
-{
-  // base case; we have not found the key
-  if (current == NULL)
-    {
-      // we have walked through the tree without finding it
-      return NULL;
-    }
-  
-  // the searchkey has been found
-  else if (current->getValue() == searchkey)
-    {
-      return current;
-    }
-  
-  // RECURSIVE CASES
-  // search key is less than current node; go left
-  else if (searchkey < current->getValue())
-    {
-      return traverse(current->getLeft(), searchkey);
-    }
-  // search key is greater than current node; go right
-  else if (searchkey > current->getValue())
-    {
-      return traverse(current->getRight(), searchkey);
-    }
-
-  return NULL;
+print(current->getLeft(), numTabs); // recursively print left child
 }
