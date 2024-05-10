@@ -36,9 +36,11 @@ void print(Node* current, int numTabs);
 int childStatus(Node* node);
 Node* getUncle(Node* node);
 Node* search(Node* current, int searchkey);
+void swapColor(Node* a, Node* b);
 
 // remove
 void remove(Node* &root, Node* current, Node* parent, int searchkey);
+void fixRemove(Node* &root, Node* node, Node* deleted);
 
 int main()
 {
@@ -110,6 +112,15 @@ int main()
 	  int searchkey = 0; // this is the number we're trying to remove
 	  cin >> searchkey;
 	  cin.ignore(max, '\n');
+	  if (search(root, searchkey)) // if the node exists
+	    {
+	      remove(root, root, root, searchkey);
+	    }
+	  else
+	    {
+	      cout << "Node not found." << endl;
+	    }
+	  print(root, 0);
         }
       else if (strcmp(input, "print") == 0) // visual display of tree
         {
@@ -288,11 +299,7 @@ void fixInsert(Node* &root, Node* newnode)
 	  if (grandparent) // if grandparent is not null
 	    {
 	      rightRotation(grandparent, root);
-
-	      // switch parent and grandparent colors
-	      char parentColor = parent->getColor();
-	      parent->setColor(grandparent->getColor());
-	      grandparent->setColor(parentColor);
+	      swapColor(parent, grandparent);
 	    }
 	}
       // right outer grandchild
@@ -302,10 +309,7 @@ void fixInsert(Node* &root, Node* newnode)
 	  if (grandparent)
 	    {
 	      leftRotation(grandparent, root);
-	      // switch parent and grandparent colors                          
-	      char parentColor = parent->getColor();
-              parent->setColor(grandparent->getColor());
-              grandparent->setColor(parentColor);
+	      swapColor(parent, grandparent);
 	    }
 	}
     }
@@ -456,6 +460,16 @@ void leftRotation(Node* current, Node* &root)
 }
 
 /**
+ * This function swaps the colors of two nodes, a and b
+ */
+void swapColor(Node* a, Node* b)
+{
+  char aColor = a->getColor();
+  a->setColor(b->getColor());
+  b->setColor(aColor);
+}
+
+/**
  * This function, given a searchkey, removes the requested node from the 
  * binary tree.
  * If the node is question has no children, the node is simply deleted.
@@ -468,6 +482,8 @@ void leftRotation(Node* current, Node* &root)
 
 void remove(Node* &root, Node* current, Node* parent, int searchkey)
 {
+  Node* replaced = NULL; // this node replaces current's spot in the tree
+  Node* temp = NULL; // this stores current before it gets deleted
   // This returns if the searchkey isn't found
   // This shouldn't happen because we have built in a searchkey check
   // up in main
@@ -495,9 +511,9 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
 	  {
 	    parent->setRight(NULL);
 	  }
-	Node* temp = current;
+	temp = current;
 	// no need to call on remove fix if it has no children
-	delete temp;
+	//delete temp;
       }
 
       // if the node has one child
@@ -521,7 +537,7 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
 	  if (current == root)
 	    {
 	      // we cannot just delete the root since it's by reference
-	      Node* temp = current;
+	      temp = current;
 	      root = child;
 
 	      // remove fix
@@ -539,10 +555,14 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
 		  parent->setRight(child);
 		}
 
-	      Node* temp = current;
+	      temp = current;
 	      // remove fix
-	      delete temp;
+	      //delete temp;
 	    }
+
+	  // the node that is replaced is the child
+	  replaced = child;
+	  cout << "the node replaced: " << replaced->getValue() << endl;
 	}
 
       // the node has two children
@@ -560,13 +580,6 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
 	      nextLargest = nextLargest->getLeft();
 	    }
 
-	  /*
-	   * IMPORTANT NOTE:
-	   * If this while statement works, the node nextLargest should NOT
-	   * have another left child. It either has a right child or no
-	   * children.
-	   */
-
 	  // we must save the child's subtree
 	  // this is the child of the next largest node
 	  Node* nextChild = nextLargest->getRight();
@@ -579,7 +592,7 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
 	  // nextLargest will replace where the parent node used to be
 	  if (current == root) // if the node to be removed is the root
 	    {
-	      Node* temp = current;
+	      temp = current;
 	      root = nextLargest; // root replaced by next largest
 
 	      // connect nextLargest to the root's original subtree
@@ -598,7 +611,7 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
                   nextLargestParent->setLeft(nextChild);
                 }
 
-	      delete temp;
+	      //delete temp;
 	    }
 	  else // the node to be removed isn't the root
             {
@@ -628,13 +641,17 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
 		{
 		  nextLargestParent->setLeft(nextChild);
 		}
-	      
-              Node* temp = current;
+
+	      //cout << nextLargest->getValue() << endl;
+              temp = current;
 	      // remove fix
-              delete temp;
+              //delete temp;
             }
-	  
+	  replaced = nextLargest; // this node replaces current's old spot
+	  //cout << "replaced: " << replaced->getValue() << endl;
 	}
+      fixRemove(root, replaced, temp);
+      delete temp;
     }
   else if (searchkey < current->getValue())
     {
@@ -644,6 +661,25 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
     {
       remove(root, current->getRight(), current, searchkey);
     }
+}
+
+/**
+ * This function fixes violations in the red black tree after removing
+ * a node.
+ * @param node | This is the node that replaces the removed node in the tree.
+ * @param deleted | This is the node that is to be removed from the tree. 
+ */
+void fixRemove(Node* &root, Node* node, Node* deleted)
+{
+  Node* parent = node->getParent();
+
+  // PART I: If 
+  // CASE 1:
+  // CASE 2:
+  // CASE 3:
+  // CASE 4:
+  // CASE 5:
+  // CASE 6:
 }
 
 /**
