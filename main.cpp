@@ -512,6 +512,7 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
 	    parent->setRight(NULL);
 	  }
 	temp = current;
+	replaced = parent; // the "replaced node" in this case is just parent
 	// no need to call on remove fix if it has no children
 	//delete temp;
       }
@@ -541,7 +542,7 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
 	      root = child;
 
 	      // remove fix
-	      delete temp;
+	      //delete temp;
 	    }
 	  else // the node to be removed isn't the root
 	    {
@@ -671,15 +672,47 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
  */
 void fixRemove(Node* &root, Node* node, Node* deleted)
 {
-  Node* parent = node->getParent();
+  Node* parent = NULL;
+  if (node)
+    {
+      parent = node->getParent();
+      cout << "parent value: " << parent->getValue() << endl;
+    }
+  if (deleted)
+    {
+      cout << "deleted value " << deleted->getValue() << endl;
+    }
 
-  // PART I: If 
-  // CASE 1:
-  // CASE 2:
-  // CASE 3:
-  // CASE 4:
-  // CASE 5:
-  // CASE 6:
+  if (node && deleted)
+    {
+      // PART I: node = red, deleted = black - we have lost one black node
+      if (node->getColor() == 'r' && deleted->getColor() == 'b')
+	{
+	  cout << "part i" << endl;
+	  // the new node becomes black to replace the black node lost.
+	  node->setColor('b');
+	}
+
+      // PART II: node = black, deleted = red
+      else if (node->getColor() == 'b' && deleted->getColor() == 'r')
+	{
+	  cout << "part ii" << endl;
+	  // since deleted is the red node, the total black height of the
+	  // tree doesn't change so we're good
+	}
+      
+      // PART III: BOTH nodes = black; we have problems with the black height
+      else if (node->getColor() == 'b' && deleted->getColor() == 'b')
+	{
+	  cout < "parent iii" << endl;
+	  // CASE 1: the "replaced node" node = the new root
+	  // CASE 2: node's sibling, s, is red, everything else is black
+	  // CASE 3: sibling = black, p, s, n, are all black
+	  // CASE 4: parent = red, sibling + sibling's children are black
+	  // CASE 5: parent is either color, inner niece = red, other = black
+	  // CASE 6: parent = either color, outer niece, red, other = black
+	}
+    }
 }
 
 /**
