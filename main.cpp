@@ -364,6 +364,28 @@ Node* getUncle(Node* node)
     }
 }
 
+Node* getSibling(Node* node)
+{
+  if (childStatus(node) == 1) // node is a left child
+    {
+      if (node->getParent()->getRight())
+	{
+	  return node->getParent()->getRight();
+	}
+    }
+  else if (childStatus(node) == 2) // node is a right child
+    {
+      if (node->getParent()->getLeft())
+	{
+	  return node->getParent()->getLeft();
+	}
+    }
+  else
+    {
+      return NULL;
+    }
+}
+
 /**
  * This function performs a right rotation around a given node "current."
  */
@@ -484,6 +506,10 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
 {
   Node* replaced = NULL; // this node replaces current's spot in the tree
   Node* temp = NULL; // this stores current before it gets deleted
+
+  // this is the parent of the node that got replaced
+  Node* replacedParent = NULL;
+  
   // This returns if the searchkey isn't found
   // This shouldn't happen because we have built in a searchkey check
   // up in main
@@ -495,6 +521,11 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
   // we have found the node to remove
   if (searchkey == current->getValue())
     {
+      replaced = current;
+      if (current->getParent())
+	{
+	  replacedParent = current->getParent();
+	}
       // this node has no children; we can just delete it
       if (current->getLeft() == NULL &&
 	  current->getRight() == NULL)
@@ -512,9 +543,7 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
 	    parent->setRight(NULL);
 	  }
 	temp = current;
-	replaced = parent; // the "replaced node" in this case is just parent
-	// no need to call on remove fix if it has no children
-	//delete temp;
+	
       }
 
       // if the node has one child
@@ -540,9 +569,6 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
 	      // we cannot just delete the root since it's by reference
 	      temp = current;
 	      root = child;
-
-	      // remove fix
-	      //delete temp;
 	    }
 	  else // the node to be removed isn't the root
 	    {
@@ -557,12 +583,8 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
 		}
 
 	      temp = current;
-	      // remove fix
-	      //delete temp;
 	    }
 
-	  // the node that is replaced is the child
-	  replaced = child;
 	  cout << "the node replaced: " << replaced->getValue() << endl;
 	}
 
@@ -645,12 +667,10 @@ void remove(Node* &root, Node* current, Node* parent, int searchkey)
 
 	      //cout << nextLargest->getValue() << endl;
               temp = current;
-	      // remove fix
-              //delete temp;
             }
-	  replaced = nextLargest; // this node replaces current's old spot
-	  //cout << "replaced: " << replaced->getValue() << endl;
 	}
+
+      // fix violations
       fixRemove(root, replaced, temp);
       delete temp;
     }
@@ -704,13 +724,39 @@ void fixRemove(Node* &root, Node* node, Node* deleted)
       // PART III: BOTH nodes = black; we have problems with the black height
       else if (node->getColor() == 'b' && deleted->getColor() == 'b')
 	{
-	  cout < "parent iii" << endl;
+	  cout << "parent iii" << endl;
 	  // CASE 1: the "replaced node" node = the new root
-	  // CASE 2: node's sibling, s, is red, everything else is black
-	  // CASE 3: sibling = black, p, s, n, are all black
-	  // CASE 4: parent = red, sibling + sibling's children are black
-	  // CASE 5: parent is either color, inner niece = red, other = black
-	  // CASE 6: parent = either color, outer niece, red, other = black
+	  if (node == root)
+	    {
+	      // nothing happens since the black height of the tree is balanced
+	    }
+	  else
+	    {
+	      Node* sibling = getSibling(node);
+	      
+	      // CASE 2: node's sibling, s, is red, everything else is black
+	      if (sibling &&
+		  sibling->getColor() == 'r' &&
+		  parent->getColor() == 'b')
+		{
+
+		  // fix any new violations through a recursive call
+		}
+	      // CASE 3: sibling = black, p, s, n, are all black
+	      else if (sibling &&
+		  sibling->getColor() == 'b' &&
+		  sibling->getLeft()->getColor() == 'b' &&
+		  sibling->getRight()->getColor() == 'b' &&
+		  parent->getColor() == 'b')
+		{
+
+		  
+		}
+	      // CASE 4: parent = red, sibling + sibling's children are black
+	      // CASE 5: parent = either color, inner niece = red, else = black
+	      // CASE 6: parent = either color, outer niece, red, else = black
+
+	    }
 	}
     }
 }
