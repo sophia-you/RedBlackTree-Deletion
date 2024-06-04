@@ -408,12 +408,10 @@ void rightRotation(Node* current, Node* &root)
 	  // current's left child will take the place of current
 	  if (childStatus(current) == 1) // left child
 	    {
-	      //cout << "current is a left child" << endl;
 	      current->getParent()->setLeft(rotated);
 	    }
 	  else if (childStatus(current) == 2) // right child
 	    {
-	      //cout << "current is a right child" << endl;
 	      current->getParent()->setRight(rotated);
 	    }
 	}
@@ -421,10 +419,8 @@ void rightRotation(Node* current, Node* &root)
 	{
 	  // in this case, there is no parent
 	  // we have to redefine the root as the rotated node
-	  //cout << "hello" << endl;
 	  root = rotated;
 	  root->setParent(NULL);
-	  cout << current->getValue() << endl;
 	}
       current->setParent(rotated); // current becomes the right subtree
       rotated->setRight(current);
@@ -471,7 +467,6 @@ void leftRotation(Node* current, Node* &root)
 	    {
 	      root = rotated;
 	      root->setParent(NULL);
-	      cout << rotated->getValue() << endl;
 	    }
 
 	  current->setParent(rotated); // current becomes the right subtree
